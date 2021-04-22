@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"strings"
 )
 
 func hello(w http.ResponseWriter, r *http.Request) {
@@ -13,21 +16,25 @@ func hello(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch r.Method {
-	case "GET":
-		http.ServeFile(w, r, "form.html")
 	case "POST":
-		// Call ParseForm() to parse the raw query and update r.PostForm and r.Form.
-		if err := r.ParseForm(); err != nil {
-			fmt.Fprintf(w, "ParseForm() err: %v", err)
-			return
+		var buf bytes.Buffer
+		file, header, err := r.FormFile("file")
+		if err != nil {
+			panic(err)
 		}
-		fmt.Fprintf(w, "Post from website! r.PostFrom = %v\n", r.PostForm)
-		name := r.FormValue("name")
-		address := r.FormValue("address")
-		fmt.Fprintf(w, "Name = %s\n", name)
-		fmt.Fprintf(w, "Address = %s\n", address)
+		defer file.Close()
+		name := strings.Split(header.Filename, ".")
+		fmt.Printf("File name %s\n", name)
+		io.Copy(&buf, file)
+
+		contents := buf.String()
+		fmt.Println(contents)
+
+		buf.Reset()
+
+		return
 	default:
-		fmt.Fprintf(w, "Sorry, only GET and POST methods are supported.")
+		fmt.Fprintf(w, "Sorry, only POST methods are supported.")
 	}
 }
 
