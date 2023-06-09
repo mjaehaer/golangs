@@ -61,7 +61,7 @@ func process(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Sorry, only POST methods are supported.")
 	}
 }
-// comment
+// comment test
 
 func renderFile(w http.ResponseWriter, filename string) {
 	fmt.Println("Read request: " + filename)
